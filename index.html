@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<!-- saved from url=(0052)https://juansemarquez.com/reveal/#/ -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+    
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+		<title>Subconsultas - BD2</title>
+
+		<link rel="stylesheet" href="./Subconsultas - BD2_files/reset.css">
+		<link rel="stylesheet" href="./Subconsultas - BD2_files/reveal.css">
+		<link rel="stylesheet" href="./Subconsultas - BD2_files/sky.css">
+
+		<!-- Theme used for syntax highlighting of code -->
+		<link rel="stylesheet" href="./Subconsultas - BD2_files/monokai.css">
+
+		<!-- Printing and PDF exports -->
+		<script>
+			var link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+			document.getElementsByTagName( 'head' )[0].appendChild( link );
+		</script><link rel="stylesheet" type="text/css" href="./Subconsultas - BD2_files/paper.css"><script type="text/javascript" src="./Subconsultas - BD2_files/marked.js.descarga"></script><script type="text/javascript" src="./Subconsultas - BD2_files/markdown.js.descarga"></script><script type="text/javascript" src="./Subconsultas - BD2_files/notes.js.descarga"></script><script type="text/javascript" src="./Subconsultas - BD2_files/highlight.js.descarga"></script>
+	<style type="text/css">.hljs-ln{border-collapse:collapse}.hljs-ln td{padding:0}.hljs-ln-n:before{content:attr(data-line-number)}</style></head>
+	<body>
+		<div class="reveal slide center has-vertical-slides has-horizontal-slides ready" role="application" data-transition-speed="default" data-background-transition="fade" style="">
+			<div class="slides" style="width: 960px; height: 700px; zoom: 1.00389;">
+				<section class="present" style="top: 17.5px; display: block;">
+                <h2>SQL: Subconsultas</h2>
+                <p><small>Bases de Datos II - 3�2� DS</small></p>
+                <p><small>Prof. Ing. Juan Marquez</small></p>
+                <img src="./Subconsultas - BD2_files/matrioska.png" alt="Matrioskas" style="border: none; box-shadow: none;">
+                </section>
+				<section class="future" style="top: 76px; display: block;" hidden="" aria-hidden="true">
+                <h3>Subconsultas</h3>
+                <ul>
+                    <li>Son consultas SELECT que est�n incluidas en otras consultas.</li>
+                    <li>Muchas veces pueden ser reemplazadas por JOINS. Se debe
+                    considerar qu� sintaxis facilita la lectura.</li>
+                    <li>En ciertas ocasiones son imprescindibles.</li>
+                    <li>No hay l�mites en los niveles de anidaci�n, pero dificulta la lectura</li>
+                </ul>
+                </section>
+
+                <section class="future" style="top: 200.5px; display: block;" hidden="" aria-hidden="true">
+                    Se pueden utilizar en distintas partes de la query:
+                    <ul>
+                        <li>En la lista de campos que va despu�s de la palabra SELECT.</li>
+                        <li>En la parte de FROM (o JOIN)</li>
+                        <li>En las condiciones del WHERE o HAVING.</li>
+                    </ul>
+                </section>
+			
+                <section class="future" style="top: 71px; display: none;" hidden="" aria-hidden="true">
+                Podemos distinguir tres tipos de subconsultas:
+                <ul>
+                    <li>Las que devuelven <span style="color:red" ;="">un solo 
+                    valor</span>. Se incluyen en cualquier parte de la query en 
+                    donde pondr�amos un valor.</li>
+                    <li>Las que devuelven <span style="color:red" ;="">una lista de 
+                    valores</span> (es decir, muchos registros pero una sola 
+                    columna). Suelen incluirse en el WHERE o HAVING, utilizando 
+                    IN.</li>
+                    <li>Las que devuelven <span style="color:red" ;="">una 
+                    matriz</span> (muchos registros con muchas columnas). 
+                    Normalmente se usan en la parte del FROM (o JOIN)</li>
+                </ul>
+                </section>
+                <section class="future" style="top: 129px; display: none;" hidden="" aria-hidden="true">
+                    <h3>Ejemplo</h3>
+                    Tomando la BD de la inmobiliaria: <br>
+                    Mostrar id y precio de venta de las operaciones cuyo precio 
+                    de venta sea superior al promedio.<br>
+					<pre><code class="hljs" data-trim="" data-line-numbers="3-4">SELECT id, precio_venta 
+FROM operaciones 
+WHERE precio_venta &gt; 
+    (SELECT AVG(precio_venta) FROM operaciones);</code></pre>
+                </section>
+                <section class="stack future" style="top: 0px; display: none;" data-previous-indexv="0" hidden="" aria-hidden="true">
+                <section class="" style="top: 0px; display: none;" aria-hidden="true">                    
+                    <h3>Otro ejemplo</h3>
+                    Mostrar id, fecha de venta y 
+                    precio de venta de las operaciones cuya fecha de venta haya 
+                    sido posterior a la �ltima venta en Entre R�os.<br>
+                    <strong>�Cu�ndo fue la �ltima venta en Entre R�os?</strong>
+					<pre><code class="hljs" data-trim="" data-line-numbers="1-4">
+-- �ltima venta en Entre R�os:
+SELECT MAX(o.fecha_venta)
+FROM operaciones o JOIN provincias p USING(id_provincia)
+WHERE p.descripcion LIKE "Entre R�os";</code></pre>
+
+					<pre><code class="hljs" data-trim="" data-line-numbers="1-5">
++--------------------+
+| MAX(o.fecha_venta) |
++--------------------+
+| 2007-04-14         |
++--------------------+
+1 row in set (0.01 sec)</code></pre>
+                </section>
+
+                <section class="future" aria-hidden="true" hidden="" style="top: 137px; display: none;">
+                    <strong>Copiamos la query de la diapositiva anterior "dentro"
+                        de la query:</strong>
+					<pre><code class="hljs" data-trim="" data-line-numbers="1-8">
+SELECT id, fecha_venta, precio_venta 
+FROM operaciones 
+WHERE fecha_venta &gt; (
+-- �ltima venta en Entre R�os
+    SELECT MAX(o.fecha_venta)
+    FROM operaciones o JOIN provincias p USING(id_provincia)
+    WHERE p.descripcion LIKE "Entre R�os"
+);</code></pre>
+                </section> 
+                </section>
+
+                <section class="stack future" style="top: 0px; display: none;" data-previous-indexv="0" hidden="" aria-hidden="true"> 
+                <section class="" style="top: 252px; display: none;" aria-hidden="true">
+                    <strong>Otro ejemplo:</strong> Mostrar el id y la fecha de 
+                    venta de las ventas que <strong>no</strong> correspondan a 
+                    los vendedores que han vendido m�s de 450 millones.<br>
+                </section>
+                <section class="future" aria-hidden="true" hidden="" style="top: 70px; display: none;">
+                    <strong>�Cu�les son los id de los vendedores que han 
+                        vendido mas de 450 millones?</strong><br>
+                    <pre><code class="hljs" data-trim="" data-line-numbers="1-4">
+SELECT v.id_vendedor, v.nombre, v.apellido, SUM(o.precio_venta) 
+FROM vendedores v JOIN operaciones o USING(id_vendedor) 
+GROUP BY v.id_vendedor
+HAVING SUM(o.precio_venta) &gt; 450000000;</code></pre>
+
+                    <pre><code class="hljs" data-trim="" data-line-numbers="1-7">
++-------------+----------+-----------+---------------------+
+| id_vendedor | nombre   | apellido  | SUM(o.precio_venta) |
++-------------+----------+-----------+---------------------+
+|          15 | Carmen   | L�pez     |           472591537 |
+|          17 | Joaqu�n  | Iriarte   |           454648735 |
++-------------+----------+-----------+---------------------+
+2 rows in set (0.02 sec)</code></pre>
+
+                </section>
+
+                <section class="future" aria-hidden="true" hidden="" style="top: 83px; display: none;">
+                    <strong>Reescribimos la consulta para que muestre
+                        solamente los id.</strong><br>
+                    <pre><code class="hljs" data-trim="" data-line-numbers="1-4">
+SELECT id_vendedor
+FROM operaciones
+GROUP BY id_vendedor
+HAVING SUM(precio_venta) &gt; 450000000;</code></pre>
+                    <pre><code class="hljs" data-trim="" data-line-numbers="1-6">
++-------------+
+| id_vendedor |
++-------------+
+|          15 |
+|          17 |
++-------------+</code></pre>                    
+                </section>
+                <section class="future" aria-hidden="true" hidden="" style="top: 350px; display: none;">
+                    Repetimos la consigna inicial:
+                    Mostrar el id y la fecha de 
+                    venta de las ventas que <strong>no</strong> correspondan a 
+                    los vendedores que han vendido m�s de 450 millones.<br>
+
+                    <pre><code class="hljs" data-trim="" data-line-numbers="1-9">
+SELECT id, fecha_venta, id_vendedor 
+FROM operaciones 
+WHERE id_vendedor NOT IN (
+    --Esta es la query de la diapositiva anterior:
+    SELECT id_vendedor  
+    FROM operaciones
+    GROUP BY id_vendedor
+    HAVING SUM(precio_venta) &gt; 450000000
+);</code></pre>
+
+                </section>
+                </section>
+                <section class="stack future" style="top: 0px; display: none;" data-previous-indexv="0" hidden="" aria-hidden="true">
+                    <section class="" style="top: 65px; display: none;" aria-hidden="true">
+                    <h3>Subconsultas <strong>no</strong> correlacionadas</h3>
+                    Hasta aqu�, hemos trabajado con <strong>subconsultas 
+                    completamente independientes</strong> de la consulta principal:
+                    <ul>
+                        <li>Primero se ejecuta la subconsulta.</li>
+                        <li>Luego se "ubica" el resultado de la misma en la 
+                            consulta principal</li>
+                        <li>Finalmente se ejecuta la consulta principal.</li>
+                    </ul>
+                    </section>
+                    <section class="future" aria-hidden="true" hidden="" style="top: 106px; display: none;">
+                        <h3>Subconsultas <strong>no</strong> correlacionadas</h3>
+                        <ul>
+                            <li>SELECT *</li>
+                            <li>FROM operaciones</li>
+                            <li>WHERE precio_venta &gt;</li>
+                            <li class="fragment fade-out" data-fragment-index="0">(SELECT AVG(precio_venta) FROM operaciones);</li>
+                            <li class="fragment fade-up" data-fragment-index="1">1203087.5254</li>
+                        </ul>
+                    </section>
+                </section>
+                <section class="stack future" style="top: 0px; display: none;" data-previous-indexv="0" hidden="" aria-hidden="true">
+                    <section class="" style="top: 205.5px; display: none;" aria-hidden="true">
+                    <h3>Subconsultas correlacionadas</h3>
+                    Estas subconsultas <strong style="color: red">no</strong>
+                    son independientes de la consulta principal, sino que
+                    se ejecutan una vez por cada registro devuelto por la consulta
+                    principal.
+                    </section>
+                    <section class="future" aria-hidden="true" hidden="" style="top: 38px; display: none;">
+                    <h3>Subconsultas correlacionadas</h3>
+                    Ejemplo: Mostrar nombre y apellido de los vendedores, con la 
+                    cantidad de ventas de cada uno y <strong>la fecha de su 
+                        primer venta de m�s de un mill�n de pesos</strong>.<br>
+                    <pre><code class="hljs">SELECT id_vendedor, v.nombre, v.apellido, COUNT(*), (
+    SELECT MIN(fecha_venta) 
+    FROM operaciones 
+    WHERE id_vendedor = o.id_vendedor
+    AND precio_venta &gt; 1000000
+    GROUP BY id_vendedor
+) as primer_millonaria 
+FROM vendedores v JOIN operaciones o USING(id_vendedor) 
+GROUP BY id_vendedor;</code></pre>
+                    </section>
+
+                    <section class="future" aria-hidden="true" hidden="" style="top: 25.5px; display: none;">
+                    <h3>Subconsultas correlacionadas</h3>
+                    Ejemplo: Mostrar nombre y apellido de los vendedores, con la 
+                    cantidad de ventas de cada uno y <strong>la fecha de su 
+                        primer venta de m�s de un mill�n de pesos</strong>.<br>
+                    <pre><code class="hljs" data-trim="" data-line-numbers="4">
+SELECT id_vendedor, v.nombre, v.apellido, COUNT(*), (
+    SELECT MIN(fecha_venta) 
+    FROM operaciones 
+    WHERE id_vendedor = o.id_vendedor 
+    AND precio_venta &gt; 1000000
+    GROUP BY id_vendedor
+) as primer_millonaria 
+FROM vendedores v JOIN operaciones o USING(id_vendedor) 
+GROUP BY id_vendedor;</code></pre>
+                    </section>
+                    <section class="future" aria-hidden="true" hidden="" style="top: 350px; display: none;">
+                        <h3>Resultado:</h3>
+                    <pre><code class="hljs" data-trim="" data-line-numbers="1-11">
++-----------+---------+----------+--------+-----------------+
+|id_vendedor| nombre  | apellido |COUNT(*)|primer_millonaria|
++-----------+---------+----------+--------+-----------------+
+|         15| Carmen  | L�pez    |    387 | 2004-06-16      |
+|         16| Pedro   | P�ramo   |    348 | 2004-06-02      |
+|         17| Joaqu�n | Iriarte  |    388 | 2004-06-21      |
+|         18| Jes�s   | M�ndez   |    319 | 2004-06-19      |
+|         19| Mar�a   | Liberotti|    336 | 2004-05-23      |
+|         20| Luisa   | Huilque  |    341 | 2004-04-21      |
+|         22| Diego   | Zapata   |    346 | 2004-04-19      |
++-----------+---------+----------+--------+-----------------+</code></pre> 
+                    </section>
+
+                </section>
+                <section class="stack future" style="top: 0px; display: none;" data-previous-indexv="0" hidden="" aria-hidden="true">
+                    <section class="past" style="top: 39px; display: none;" hidden="" aria-hidden="true">
+                    <h3>Metodolog�a para consultas complejas</h3>
+                    <ol>
+                        <li>Expresar el problema <strong>en castellano</strong>.</li>
+                        <li>Usar pseudoc�digo para resolver parcialmente el problema.</li>
+                        <li>Codificar las subconsultas y <strong>probarlas</strong>
+                        para asegurarse de que retornan el resultado esperado.</li>
+                        <li>Codificar y probar la consulta completa.</li>
+                    </ol>
+                    <small><strong>Fuente:</strong>Murach's MySQL, 2� ed.</small>
+                    </section>
+                    <section class="past" style="top: 226.5px; display: none;" hidden="" aria-hidden="true">
+                    <ol>
+                        <li>Expresar el problema <strong>en castellano</strong>.</li>
+                    </ol><br>
+                    Despu�s de que se realiz� la �ltima venta en Entre R�os, �qu�
+                    ventas se han realizado? Mostrar id, fecha, y precio de venta.
+                    </section>
+                    <section class="past" style="top: 175.5px; display: none;" hidden="" aria-hidden="true">
+                        <ol start="2">
+                            <li>Usar pseudoc�digo para resolver parcialmente el problema.</li>
+                        </ol><br>
+                    <pre><code class="hljs" data-trim="" data-line-numbers="1-5">
+SELECT id, fecha_venta, precio_venta
+FROM operaciones
+WHERE fecha_venta &gt; (
+-- Fecha de la �ltima venta en Entre R�os
+);</code></pre>
+                    </section>
+                    <section class="past" style="top: 162.5px; display: none;" hidden="" aria-hidden="true">
+                        <ol start="3">
+                        <li>Codificar las subconsultas y <strong>probarlas</strong>
+                        para asegurarse de que retornan el resultado esperado.</li>
+                        </ol><br>
+					<pre><code class="hljs" data-trim="" data-line-numbers="1-4">
+-- �ltima venta en Entre R�os:
+SELECT MAX(o.fecha_venta)
+FROM operaciones o JOIN provincias p USING(id_provincia)
+WHERE p.descripcion = "Entre R�os";</code></pre>
+                    </section>
+                    <section class="" style="top: 162.5px; display: none;" aria-hidden="true">
+                        <ol start="4">
+                        <li>Codificar y probar la consulta completa.</li>
+                        </ol><br>
+					<pre><code class="hljs" data-trim="" data-line-numbers="1-8">
+SELECT id, fecha_venta, precio_venta 
+FROM operaciones 
+WHERE fecha_venta &gt; (
+-- �ltima venta en Entre R�os
+    SELECT MAX(o.fecha_venta)
+    FROM operaciones o JOIN provincias p USING(id_provincia)
+    WHERE p.descripcion = "Entre R�os"
+);</code></pre>
+                        
+                    </section>
+                </section>
+
+
+            </div>
+        <div class="backgrounds"><div class="slide-background present" data-loaded="true" style="display: block;"><div class="slide-background-content"></div></div><div class="slide-background future" data-loaded="true" style="display: block;"><div class="slide-background-content"></div></div><div class="slide-background future" data-loaded="true" style="display: block;"><div class="slide-background-content"></div></div><div class="slide-background future" style="display: none;" data-loaded="true"><div class="slide-background-content"></div></div><div class="slide-background future" style="display: none;" data-loaded="true"><div class="slide-background-content"></div></div><div class="slide-background stack future" style="display: none;" data-loaded="true"><div class="slide-background-content"></div><div class="slide-background present" style="display: none;" data-loaded="true"><div class="slide-background-content"></div></div><div class="slide-background future" style="display: none;" data-loaded="true"><div class="slide-background-content"></div></div></div><div class="slide-background stack future" style="display: none;" data-loaded="true"><div class="slide-background-content"></div><div class="slide-background present" style="display: none;" data-loaded="true"><div class="slide-background-content"></div></div><div class="slide-background future" style="display: none;" data-loaded="true"><div class="slide-background-content"></div></div><div class="slide-background future" style="display: none;" data-loaded="true"><div class="slide-background-content"></div></div><div class="slide-background future" style="display: none;"><div class="slide-background-content"></div></div></div><div class="slide-background stack future" style="display: none;" data-loaded="true"><div class="slide-background-content"></div><div class="slide-background present" style="display: none;" data-loaded="true"><div class="slide-background-content"></div></div><div class="slide-background future" style="display: none;" data-loaded="true"><div class="slide-background-content"></div></div></div><div class="slide-background stack future" style="display: none;" data-loaded="true"><div class="slide-background-content"></div><div class="slide-background present" style="display: none;" data-loaded="true"><div class="slide-background-content"></div></div><div class="slide-background future" style="display: none;" data-loaded="true"><div class="slide-background-content"></div></div><div class="slide-background future" style="display: none;" data-loaded="true"><div class="slide-background-content"></div></div><div class="slide-background future" style="display: none;"><div class="slide-background-content"></div></div></div><div class="slide-background stack future" style="display: none;" data-loaded="true"><div class="slide-background-content"></div><div class="slide-background past" style="display: none;" data-loaded="true"><div class="slide-background-content"></div></div><div class="slide-background past" style="display: none;" data-loaded="true"><div class="slide-background-content"></div></div><div class="slide-background past" style="display: none;" data-loaded="true"><div class="slide-background-content"></div></div><div class="slide-background past" style="display: none;" data-loaded="true"><div class="slide-background-content"></div></div><div class="slide-background present" style="display: none;" data-loaded="true"><div class="slide-background-content"></div></div></div></div><div class="progress" style="display: block;"><span style="width: 0px;"></span></div><aside class="controls" data-controls-layout="bottom-right" data-controls-back-arrows="faded" style="display: block;"><button class="navigate-left" aria-label="previous slide" disabled="disabled"><div class="controls-arrow"></div></button><button class="navigate-right enabled" aria-label="next slide"><div class="controls-arrow"></div></button><button class="navigate-up" aria-label="above slide" disabled="disabled"><div class="controls-arrow"></div></button><button class="navigate-down" aria-label="below slide" disabled="disabled"><div class="controls-arrow"></div></button></aside><div class="slide-number" style="display: none;"></div><div class="speaker-notes" data-prevent-swipe="" tabindex="0"></div><div class="pause-overlay"><button class="resume-button">Resume presentation</button></div><div id="aria-status-div" aria-live="polite" aria-atomic="true" style="position: absolute; height: 1px; width: 1px; overflow: hidden; clip: rect(1px, 1px, 1px, 1px);">
+                SQL: Subconsultas
+                Bases de Datos II - 3�2� DS
+                Prof. Ing. Juan Marquez
+                
+                </div></div>
+
+        <script src="./Subconsultas - BD2_files/reveal.js.descarga"></script>
+
+        <script>
+            // More info about config & dependencies:
+            // - https://github.com/hakimel/reveal.js#configuration
+            // - https://github.com/hakimel/reveal.js#dependencies
+            Reveal.initialize({
+                controls: true,
+                progress: true,
+                center: true,
+                hash: true,
+
+                transition: 'slide', // none/fade/slide/convex/concave/zoom
+                dependencies: [
+                    { src: 'plugin/markdown/marked.js' },
+                    { src: 'plugin/markdown/markdown.js' },
+                    { src: 'plugin/notes/notes.js', async: true },
+                    { src: 'plugin/highlight/highlight.js', async: true }
+                ]
+            });
+        </script>
+    
+
+</body></html>
